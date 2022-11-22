@@ -1,11 +1,5 @@
 const mongoose = require('mongoose')
-
-if (process.argv.length < 3) {
-  console.log('Please provide the password as an argument: node mongo.js <password>')
-  process.exit(1)
-}
-
-const password = process.argv[2]
+const password = 'KADAZAMI007'
 
 const url = `mongodb+srv://photoman:${password}@cluster0.ecufs.mongodb.net/note-app`
 
@@ -15,6 +9,14 @@ const noteSchema = new mongoose.Schema({
   content: String,
   date: Date,
   important: Boolean,
+})
+
+noteSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 const Note = mongoose.model('Note', noteSchema)
@@ -30,9 +32,9 @@ const note = new Note({
   mongoose.connection.close()
 })*/
 
-Note.find({}).then(result => {
+/*Note.find({}).then(result => {
     result.forEach(note => {
         console.log(note)
     })
     mongoose.connection.close()
-})
+})*/

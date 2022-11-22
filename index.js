@@ -32,11 +32,13 @@ const PORT = 3001
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
 */
+require('dotenv').config()
 
 const express = require('express')
 const cors = require('cors')
 
 const app = express()
+const Note = require('./models/note')
 
 
 const requestLogger = (request, response, next) => {
@@ -80,11 +82,18 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  Note.find({}).then(notes => {
+    response.json(notes)
+  })
+
 })
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
+  Note.findById(request.params.id).then(note => {
+    response.json(note)
+  })
+
+  /*const id = Number(request.params.id)
   console.log(id)
   //const note = notes.find(note => note.id === id)
   const note = notes.find(note => {
@@ -96,13 +105,27 @@ app.get('/api/notes/:id', (request, response) => {
     response.json(note)
   } else {
     response.status(404).end()
-  }
+  }*/
 })
 
 app.post('/api/notes', (request, response) => {
   const body = request.body
 
-  if (!body.content) {
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
+  }
+
+  const note = new Note({
+    content: body.content,
+    important: body.important || false,
+    date: new Date(),
+  })
+
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
+
+  /*if (!body.content) {
     return response.status(400).json({ 
       error: 'content missing' 
     })
@@ -117,14 +140,18 @@ app.post('/api/notes', (request, response) => {
 
   notes = notes.concat(note)
 
-  response.json(note)
+  response.json(note)*/
 })
 
 app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  notes = notes.filter(note => note.id !== id)
 
-  response.status(204).end()
+  /*const id = Number(request.params.id)
+  notes = notes.filter(note => note.id !== id)*/
+
+  Note.findOneAndRemove(request.params.id).then(note => {
+    response.status(204).end()
+  })
+
 })
 
 const generateId = () => {
